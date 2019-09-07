@@ -1,0 +1,145 @@
+---
+title: "Computation in Rubik's Cube"
+author: "Asmita Gautam, Joce Kofke, Ariana Meredith, Nashshaba Nawaz, Charlotte Crandall"
+date: "May 3, 2018"
+output: oilabs::lab_report
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(oilabs)
+```
+
+* * *
+
+### Introduction: 
+
+---
+
+![](rubik.jpg)
+
+A Rubik’s cube is a popular toy first created in 1974 by Ernő Rubik, a Hungarian sculptor and architect. It is a small cube made up of an n x n x n array of small cube blocks, called “cubies.” Each cubie face on the outside of the puzzle has a colored sticker. The goal is to rotate the cubies in slices of n x n x 1 in order to make all sides a solid color. We will be focusing on the traditional 3 x 3 x 3 Rubik’s cube, which has 6 center cubes, 12 edge cubes, and 8 corners.
+
+A valid configuration of a Rubik’s cube is one that can be obtained by a series of slice rotations. In mathematical terms, the following three criteria must be met: (1) permutations of edge pieces and permutations of corner pieces have same parity, (2) the sum of corner twists is zero, and (3) the sum of edge twists is zero. Some examples of invalid configurations are two edges or two corner pieces being swapped, an edge being flipped, or a corner being twisted. There are 43,252,003,274,489,856,000 possible valid configurations. Interestingly, if you took apart a Rubik’s cube and randomly reassembled it, you would only have a 1/12 chance that your scrambled configuration is valid. All valid configurations are at most 20 moves away from the solution, but since people follow patterns and strategies to solve the puzzle, it usually takes more.
+
+Our question is: What is the time complexity of optimally solving a 3x3x3 Rubik’s Cube?
+Our answer is: A 3x3x3 Rubik’s Cube is NP complete.
+
+* * *
+
+### Description of the Result:
+
+--- 
+
+#### **The Rubik’s Cube Problem is in NP**
+
+We can convert the Rubik’s cube problem into a decision problem - Can a particular cube be solved in exactly n moves? This decision problem is an NP problem because you can check if an n-move sequence solves the cube, and hence prove that it can be solved in n moves in polynomial time.
+
+---
+
+#### **Hamiltonian Path is NP-complete**
+
+*Q:* What is the Hamiltonian Path problem?
+
+*Ans:* So for a given graph, the Hamiltonian path problem requires you to find a hamiltonian path, where a hamiltonian path is a simple open path through a graph that goes through every vertex exactly once.
+
+We can write the Hamiltonian Path problem in the following form:
+* HAMILTONIAN－PATH/ HP = { (G) | G is a graph that contains a Hamiltonian path }
+
+To show that HP is in NP we could use a graph G with V vertices and E edges as our witness. We would nondeterministically choose edges from graph G that are to be included in the Hamilton path and then traverse/trace the path. The verifier would first confirm whether the path includes the same no. of vertices as the total no. of vertices in graph G. It would then confirm whether the path goes through each vertex exactly once. This entire process can be conducted within polynomial time, hence proving the HP is in NP.
+
+Next we will reduce the Hamilton Cycle problem, which is a known NP-complete problem, to    the Hamilton Path problem. So a Hamilton cycle is a closed loop/ graph cycle goes through the each vertex of the graph exactly once. The Hamiltonian Cycle problem can be expressed as follows: 
+
+* HAMILTONIAN-CYCLE/ HC = { (G) | G is graph that contains a Hamiltonian cycle }.
+
+To prove that HP is NP-hard we will polynomially reduce HC to HP by transforming an instance of HC to an instance of HP and vice versa.
+
+*Proof:*
+
+Construct graph G’ such that G contains a Hamiltonian cycle if and only if G’ contains a Hamiltonian path. To do this: 
+ 
+ * Choose an arbitrary vertex u in G and add a copy, u’, of it together with all its edges.
+ 
+ * Add vertices v and v’ to the graph and connect v with u and v’ with u’
+ 
+Suppose first that G contains a Hamiltonian cycle. Then we get a Hamiltonian path in G’ if we start in v, follow the cycle that we got from G back to u’ instead of u and finally end in v’. For instance, in the following figure, G contains the Hamiltonian cycle 2,5,1,3,4,2. In G’ this corresponds to v,2,5,1,3,4,2’,v’:
+
+![](hamiltonian.jpg)
+
+Conversely, suppose G’ contains a Hamiltonian path. In that case, the path must necessarily have endpoints in v and v’. This path can be transformed to a cycle in G. Namely, if we disregard v and v’, the path must have endpoints in u and u’ and if we remove u’ we get a cycle in G if we close the path back to u instead of u’.
+
+Hence, we have shown that G contains a Hamiltonian cycle if and only if G’ contains a Hamiltonian path, which concludes the proof that HAMILTONIAN-PATH is NP-complete.
+
+--- 
+
+#### **Hamiltonian Path reduces to Cayley Graph**
+
+A Cayley Graph is used to represent groups in an abstract way. A group is a set of elements with an identity element, an operation, an inverse of the operation, and some generating set. An example from the presentation was the group of all integers, generated by adding the numbers 2 and 3 together some number of times. The identity element is 0, the operation is addition, and the inverse is subtraction. To represent this group as a Cayley graph, draw a vertex for each member of the group, meaning every integer. Two vertices are connected by an edge if an instance of the group operation (adding 2 or 3) can transform one group member into another. The edges are directed to indicate the direction of the operation, and colored to indicate which generating element was used in the transformation. For example, a red arrow pointed from 1 to 3 to indicate that adding 2 to 1 gets 3.
+
+![](cayley.jpg)
+A vertex-transitive graph is a graph in which all vertices are similar. There is an isomorphic transformation that relates the graph to itself. For any pair of vertices in a vertex-transitive graph, each vertex is similar to the other, so there is an automorphism that maps any vertex to any other vertex in the graph. All vertex-transitive graphs are regular, meaning all vertices on the graph have the same degree. Every Cayley graph is vertex-transitive, but not every vertex-transitive graph is a Cayley graph.
+
+By the Lovász Conjecture, every finite connected vertex-transitive graph contains a Hamiltonian path. There are 5 known counterexamples, but none of them are Cayley graphs. So every finite connected Cayley graph contains a Hamiltonian path.
+
+The Hamiltonian path problem can be constructed as follows, where G is a graph:
+On input G:
+Run CAYLEY-GRAPH on G and DWID.
+
+--- 
+
+#### **Cayley Graph reduces to Rubik’s Cube**
+
+A Cayley Graph is a directed graph that has some finite set of generators, which are edges of the graph, that lead to a certain node of the graph. We can take the format of the Cayley Graph to represent a Rubik’s Cube graphically. 
+
+Each configuration of the Rubik’s Cube is represented as a node of the graph. Each movement of the Rubik’s Cube is represented by an edge of the graph. These movements can be any rotation of 90°, 180°, or 270° degrees for any row or column of the Rubik’s Cube. 
+
+If this Cayley Graph existed, it would be very large, but it is possible to exist. Each node would have directed edges that pointed to each possible configuration based on each possible movement of the Rubik’s Cube. 
+
+From the video lecture “Visual Group Theory, Lecture 1.2: Cayley graphs”, the Cayley Graph for a Rubik’s Cube is imagined as a “Big Book”. A sample entry for this book is shown below: 
+
+![](bigbook.jpg)
+
+In this entry, it focuses on one configuration of the Rubik’s Cube as pictured in the image, which would be equivalent to one node of the Cayley Graph. It also shows each possible movement (although only for 90° rotations), which are equivalent to edges or generators of the Cayley Graph. 
+
+Since it is possible for every configuration and every movement of the Rubik’s Cube to be represented by a Cayley Graph, the Cayley Graph reduces to Rubik’s Cube. Therefore, the Rubik’s Cube is NP-Hard. Since we earlier proved that the Rubik’s Cube is in NP, the Rubik’s Cube Problem is NP-Complete.
+
+* * *
+
+### Discussion:
+
+---
+
+We were initially planning to focus on proving that the n x n x n Rubik’s cube is NP complete, which was proved in paper by Erik Demaine, Sarah Eisenstat, and Mikhail Rudoy. While this proof was a huge deal to mathematicians and computer scientists and we were just as excited about presenting it, we realized that this proof is beyond what we can comprehend at this point with our knowledge of graphs and computation. While we were researching on alternate papers to understand this proof, we came across “god’s number”, which is 20 for a 3 x 3 x 3 Rubik’s cube. This is the maximum number of moves needed to solve any configuration. This intrigued us and we decided to narrow down our topic to a 3 x 3 x 3 rubik’s cube. However, we were not able to find a singular paper with all the reductions we needed and hence compiled our entire proof from different sources. 
+
+While this process was intimidating, it allowed us to understand the proof with a depth that would have probably not been possible otherwise. The Hamiltonian Path is the reduction that is used to prove that the n x n x n Rubik’s cube is NP complete, even though we are using it solely for the n = 3 case. From the original paper, we knew that the Hamiltonian Path is NP complete and so looked for proofs for the Hamiltonian path being NP complete. This is how we started our reduction. We found that the 3 x 3 x 3 rubik’s cube can be represented as a Cayley graph, which is how “god’s number” was found. We then looked for connections between Cayley graphs and Hamiltonian paths and found that every Cayley graph has a Hamiltonian path. We compiled everything we learned for our reduction: HAMILTONIAN-PATH ≤P CAYLEY-GRAPH ≤P RUBIK’S−CUBE. 
+
+Although we found a few short articles on this proof, since we did not follow a concrete, singular paper, we are unsure about our reduction. Mainly we are concerned if we are reducing in the right direction.
+
+Optimal algorithms for the Rubik’s cube have been a point of discussion for generations and our original motivation behind choosing this topic was to learn the optimal algorithm that solves it. We learnt there is no such handed-down solution since it is a difficult problem and is in fact NP complete. The rubik’s cube problem is interesting because it is related to very important subjects in mathematics and computer science such as combinatorics, computational complexity, and group theory, to name just three. The Rubik’s cube is an instance of what’s called a configuration problem, the best-known example of which involves finding the most efficient way to re-organize boxes stacked in a warehouse. If an optimal solution to this problem was found, it would take algorithms to a whole new level.
+
+* * *
+
+### Contributions:
+
+---
+
+For this project, we divided the material into five sections. Each team member was responsible for creating the slides and writing the blog material for their section. However, we all worked together to understand the proof and make decisions about the presentation, and we all met regularly to discuss the material and any issues. Joce worked on the “Introduction”, Nashshaba worked on the “Hamiltonian Path is NP-complete”, Charlotte worked on the “Hamiltonian Path reduces to Cayley Graph”, Ariana worked on the “Cayley Graph reduces to Rubik’s Cube”, and Asmita worked on the “Rubik’s Cube Problem is in NP” and the “Discussion”. Additionally, Asmita created the original draft for the presentation, and Joce compiled the R Markdown file for the blog post. 
+
+* * * 
+
+### References:
+
+---
+
+1. Erik D. Demaine, Sarah Eisenstat, Mikhail Rudoy. “Solving the Rubik’s Cube Optimally Is NP-Complete.”
+2. “Visual Group Theory, Lecture 1.2: Cayley Graphs.” YouTube, YouTube, 24 Feb. 2016, www.youtube.com/watch?v=vzEObOzsSKY.
+3. Algorithms And Complexity. Exercise Session 6, and Np-Problems. “In Mobile Telephony, You Need to Solve the Frequency Allocation Problem.” In Mobile Telephony, You Need to Solve the Frequency Allocation Problem.
+4. “Lovász Conjecture.” Wikipedia, Wikimedia Foundation, 14 Mar. 2018, en.wikipedia.org/wiki/Lov%C3%A1sz_conjecture.
+5. “Unsolveable Rubik's Cube - Invalid Scramble.” Ruwix, ruwix.com/the-rubiks-cube/unsolvable-rubiks-cube-invalid-scramble/. 
+6. Bartlett, Padraic. “Cayley Graphs.” Wolfram Demonstrations Project, 2007
+7. “Rubik's Cube Notes – Cayley Graphs and God's Algorithm.” Yet Another Mathblog, 18 Aug. 2016, yetanothermathblog.com/permutation-puzzles/lecture-notes-on-the-rubiks-cube/rubiks-cube-notes-cayley-graphs-and-gods-algorithm/.
+8. “Rubik's Cube.” Wikipedia, Wikimedia Foundation, 2 May 2018, en.wikipedia.org/wiki/Rubik%27s_Cube. 
+9. “Lovász Conjecture and Devil's Algorithm.” Complex Projective 4-Space, 7 July 2013, cp4space.wordpress.com/2013/07/07/lovasz-conjecture-and-devils-algorithm/.
+
